@@ -18,16 +18,19 @@ These are part of the dataset:
 Licensed under [Creative Commons Attribution-NonCommercial-ShareAlike 4.0
 International (CC BY-NC-SA 4.0)](https://creativecommons.org/licenses/by-nc-sa/4.0/).
 
-**This tutorial does not redistribute these files** — they are fetched at
-runtime directly from Dataverse. Any further use must comply with the upstream
-licence (attribute the authors, no commercial use, derivative works share
-alike).
+**These files are mirrored verbatim in this tutorial repo's [`data/`](data/)
+directory** (the notebook fetches them from there rather than from Dataverse,
+so students get one robust download source — Dataverse can be flaky from
+Colab). The mirroring is permitted by CC BY-NC-SA 4.0 provided we preserve
+attribution and the same licence, both of which we do here and in the notebook
+citation block. Any further use must comply with the upstream licence
+(attribute the authors, no commercial use, derivative works share alike).
 
 ## Pre-trained model weights — CC BY-NC-SA 4.0
 
-`stress_nn_random.pt` and `pure_lstm_random.pt` (shipped as `models_bundle.zip`
-in this repo's GitHub releases) were trained on the field-trial dataset above
-and are therefore derivative works. They are released under the same
+`stress_nn_random.pt` and `pure_lstm_random.pt` (shipped as
+[`data/models_bundle.zip`](data/models_bundle.zip)) were trained on the
+field-trial dataset above and are therefore derivative works. They are released under the same
 [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/) licence
 as the source data.
 

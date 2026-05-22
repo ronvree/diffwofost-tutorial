@@ -1,15 +1,15 @@
-"""Build the models_bundle.zip hosted as a release asset.
+"""Build the models_bundle.zip committed under data/ for the notebook to fetch.
 
-Only the pretrained model weights live in this bundle (~96 KB). All other
-runtime assets are fetched from upstream:
-  * field-trial data: Harvard Dataverse (doi:10.7910/DVN/1LC6W7)
-  * PCSE stock configs/crops/agro: raw.githubusercontent.com/ajwdewit/...
+Only the pretrained model weights live in this bundle (~96 KB). The field-trial
+files (also under data/) are mirrored verbatim from Harvard Dataverse
+(doi:10.7910/DVN/1LC6W7); PCSE stock configs are fetched from upstream at
+runtime.
 
 Usage:
     python scripts/build_models_bundle.py [--src PATH] [--out PATH]
 
 Defaults --src to ../diffWOFOST (sibling checkout) and --out to
-<repo>/models_bundle.zip.
+<repo>/data/models_bundle.zip.
 """
 import argparse
 import zipfile
@@ -28,8 +28,8 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--src", type=Path, default=REPO_ROOT.parent / "diffWOFOST",
                     help="Path to a diffwofost checkout (default: ../diffWOFOST)")
-    ap.add_argument("--out", type=Path, default=REPO_ROOT / "models_bundle.zip",
-                    help="Output zip path (default: <repo>/models_bundle.zip)")
+    ap.add_argument("--out", type=Path, default=REPO_ROOT / "data" / "models_bundle.zip",
+                    help="Output zip path (default: <repo>/data/models_bundle.zip)")
     args = ap.parse_args()
 
     if not args.src.is_dir():

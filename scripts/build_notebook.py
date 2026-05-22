@@ -44,22 +44,24 @@ TUTORIAL_REPO    = "ronvree/diffwofost-tutorial"
 TUTORIAL_BRANCH  = "master"    # flip to "main" after `git branch -M main`
 TUTORIAL_VERSION = "v1.0"
 
-MODELS_BUNDLE_URL = (
-    f"https://github.com/{TUTORIAL_REPO}/releases/download/"
-    f"{TUTORIAL_VERSION}/models_bundle.zip"
+TUTORIAL_DATA_URL = (
+    f"https://raw.githubusercontent.com/{TUTORIAL_REPO}/{TUTORIAL_BRANCH}/data"
 )
 COLAB_BADGE_URL = (
     f"https://colab.research.google.com/github/{TUTORIAL_REPO}/"
     f"blob/{TUTORIAL_BRANCH}/hybrid_stress_correction.ipynb"
 )
 
-# Harvard Dataverse: Ten Den et al. (2024) — CC BY-NC-SA 4.0
+# Field-trial data: Ten Den et al. (2024), CC BY-NC-SA 4.0.
+# Originally from Harvard Dataverse (doi:10.7910/DVN/1LC6W7); mirrored verbatim
+# in this repo's data/ directory for reproducibility (CC BY-NC-SA 4.0 permits
+# this provided attribution is preserved — see DATA_LICENSE.md).
 DATAVERSE_DOI = "10.7910/DVN/1LC6W7"
-FIELD_DATA_FILE_IDS = {
-    "Plotspecific_processed.csv": 10850227,
-    "Weatherfile_lelystad.xlsx":  10284792,
-    "Weatherfile_vredepeel.xlsx": 10284786,
-}
+FIELD_DATA_FILES = [
+    "Plotspecific_processed.csv",
+    "Weatherfile_lelystad.xlsx",
+    "Weatherfile_vredepeel.xlsx",
+]
 
 
 def md(src):
@@ -221,16 +223,18 @@ def build():
     cells.append(md(
         '### 2.2 Download data and pre-trained weights\n'
         '\n'
-        'Three sources:\n'
+        'Two sources:\n'
         '\n'
-        '1. **Field-trial data** — three files (~900 KB total) from the\n'
-        f'   [Harvard Dataverse dataset by Ten Den et al. (2024)](https://doi.org/{DATAVERSE_DOI})\n'
-        '   (CC BY-NC-SA 4.0).\n'
-        '2. **Pre-trained model weights** — `stress_nn_random.pt` (the hybrid)\n'
-        '   and `pure_lstm_random.pt` (the pure-ML reference) from this tutorial\n'
-        "   repo's `v1.0` release. They are derivative works of the field data\n"
-        '   and therefore also CC BY-NC-SA 4.0.\n'
-        '3. **PCSE stock files** — config, crop YAML, and an agromanagement\n'
+        "1. **This tutorial repo's `data/` directory** — three field-trial files\n"
+        '   (~900 KB) plus `models_bundle.zip` with the pre-trained `stress_nn_random.pt`\n'
+        '   (the hybrid) and `pure_lstm_random.pt` (the pure-ML reference).\n'
+        '\n'
+        '   The field-trial files are mirrored verbatim from the\n'
+        f'   [Harvard Dataverse dataset by Ten Den et al. (2024)](https://doi.org/{DATAVERSE_DOI}),\n'
+        '   licensed CC BY-NC-SA 4.0 (see [DATA_LICENSE.md](https://github.com/' + TUTORIAL_REPO + '/blob/' + TUTORIAL_BRANCH + '/DATA_LICENSE.md)).\n'
+        '   The model weights are derivative works of the same data and ship\n'
+        '   under the same licence.\n'
+        '2. **PCSE stock files** — config, crop YAML, and an agromanagement\n'
         '   template, pulled from `ajwdewit/pcse` and `ajwdewit/pcse_notebooks`\n'
         '   (Apache-2.0).\n'
         '\n'
@@ -239,8 +243,7 @@ def build():
 
     # ---- Cell 9: data-fetch code ------------------------------------------
     files_block = "\n".join(
-        f'    ({fid}, data_temp_dir / "{name}"),'
-        for name, fid in FIELD_DATA_FILE_IDS.items()
+        f'    "{name}",' for name in FIELD_DATA_FILES
     )
     cells.append(code(
         'for d in [\n'
@@ -252,28 +255,29 @@ def build():
         ']:\n'
         '    d.mkdir(parents=True, exist_ok=True)\n'
         '\n'
-        f'# 1. Field-trial data — Harvard Dataverse (doi:{DATAVERSE_DOI})\n'
-        '#    Ten Den et al. (2024), CC BY-NC-SA 4.0\n'
-        'DATAVERSE = "https://dataverse.harvard.edu/api/access/datafile"\n'
-        'for file_id, dest in [\n'
+        "# 1. Field-trial data + pre-trained models — this tutorial repo's data/.\n"
+        f'#    Field data: Ten Den et al. (2024), CC BY-NC-SA 4.0, mirrored from\n'
+        f'#    Harvard Dataverse (doi:{DATAVERSE_DOI}). Models: derivative works,\n'
+        '#    same licence. See DATA_LICENSE.md.\n'
+        f'TUTORIAL_DATA = "{TUTORIAL_DATA_URL}"\n'
+        'for name in [\n'
         f'{files_block}\n'
         ']:\n'
+        '    dest = data_temp_dir / name\n'
         '    if not dest.exists():\n'
-        '        print(f"Downloading {dest.name} from Dataverse...")\n'
-        '        urlretrieve(f"{DATAVERSE}/{file_id}", dest)\n'
+        '        print(f"Downloading {name}...")\n'
+        '        urlretrieve(f"{TUTORIAL_DATA}/{name}", dest)\n'
         '\n'
-        "# 2. Pre-trained model weights — this tutorial repo's release\n"
-        f'MODELS_URL = "{MODELS_BUNDLE_URL}"\n'
         'models_dir = data_temp_dir / "trained_models"\n'
         'zip_path = models_dir / "models_bundle.zip"\n'
         'if not (models_dir / "stress_nn_random.pt").exists():\n'
         '    print("Downloading pre-trained models...")\n'
-        '    urlretrieve(MODELS_URL, zip_path)\n'
+        '    urlretrieve(f"{TUTORIAL_DATA}/models_bundle.zip", zip_path)\n'
         '    with zipfile.ZipFile(zip_path) as z:\n'
         '        z.extractall(models_dir)\n'
         '    zip_path.unlink()\n'
         '\n'
-        '# 3. PCSE stock files (Apache-2.0)\n'
+        '# 2. PCSE stock files (Apache-2.0)\n'
         'PCSE_URL = "https://raw.githubusercontent.com/ajwdewit/pcse/master/pcse/conf"\n'
         'NB_URL   = "https://raw.githubusercontent.com/ajwdewit/pcse_notebooks/master/data"\n'
         'for url, dest in [\n'
@@ -286,7 +290,7 @@ def build():
         '        print(f"Downloading {dest.name}...")\n'
         '        urlretrieve(url, dest)\n'
         '\n'
-        '# 4. The 2019 agromanagement file is a one-line variant of the 2020 template\n'
+        '# 3. The 2019 agromanagement file is a one-line variant of the 2020 template\n'
         '#    (different year). Generate it inline rather than maintaining a copy.\n'
         'agro_2019 = data_dir / "agro" / "AGMT_C2_2019.agro"\n'
         'if not agro_2019.exists():\n'

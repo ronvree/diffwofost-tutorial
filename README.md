@@ -35,9 +35,14 @@ through the whole pipeline in 8–10 min on a free CPU runtime.
 ├── README.md                        ← this file
 ├── LICENSE                          ← EUPL-1.1 (code + notebook)
 ├── DATA_LICENSE.md                  ← CC BY-NC-SA 4.0 (field data + models)
+├── data/                            ← all runtime assets the notebook downloads
+│   ├── Plotspecific_processed.csv   ← mirrored from Harvard Dataverse
+│   ├── Weatherfile_lelystad.xlsx    ← mirrored from Harvard Dataverse
+│   ├── Weatherfile_vredepeel.xlsx   ← mirrored from Harvard Dataverse
+│   └── models_bundle.zip            ← pre-trained model weights (built by scripts/)
 └── scripts/
     ├── build_notebook.py            ← regenerates the .ipynb from a local diffwofost checkout
-    └── build_models_bundle.py       ← packages the pre-trained weights for release
+    └── build_models_bundle.py       ← packages the pre-trained weights into data/models_bundle.zip
 ```
 
 ## What gets downloaded at runtime
@@ -47,8 +52,8 @@ is nothing to install or copy locally:
 
 | Source | Files | Size | Licence |
 |--------|-------|------|---------|
-| [Harvard Dataverse: Ten Den et al. (2024)](https://doi.org/10.7910/DVN/1LC6W7) | `Plotspecific_processed.csv`, `Weatherfile_lelystad.xlsx`, `Weatherfile_vredepeel.xlsx` | ~900 KB | CC BY-NC-SA 4.0 |
-| This repo's `v1.0` release | `models_bundle.zip` (pre-trained `stress_nn_random.pt` + `pure_lstm_random.pt`) | ~80 KB | CC BY-NC-SA 4.0 (derivative work) |
+| This repo's [`data/`](data/) directory | `Plotspecific_processed.csv`, `Weatherfile_lelystad.xlsx`, `Weatherfile_vredepeel.xlsx` (mirrored from [Ten Den et al. (2024), Harvard Dataverse](https://doi.org/10.7910/DVN/1LC6W7) — see [DATA_LICENSE.md](DATA_LICENSE.md)) | ~900 KB | CC BY-NC-SA 4.0 |
+| This repo's [`data/`](data/) directory | `models_bundle.zip` (pre-trained `stress_nn_random.pt` + `pure_lstm_random.pt`) | ~80 KB | CC BY-NC-SA 4.0 (derivative work) |
 | [`ajwdewit/pcse`](https://github.com/ajwdewit/pcse) + [`ajwdewit/pcse_notebooks`](https://github.com/ajwdewit/pcse_notebooks) | `Wofost72_PP.conf`, `crops.yaml`, `potato.yaml`, `AGMT_C2_2020.agro` | ~50 KB | Apache-2.0 |
 
 PyPI install: `diffwofost==0.4.0` (pulls `pcse`, `torch`, etc. transitively).
