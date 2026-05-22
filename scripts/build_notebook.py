@@ -36,11 +36,21 @@ NN_STRESS_FACTOR_PY = DIFFWOFOST_SRC / "ml_models" / "crop" / "evapotranspiratio
 # students will be told to switch to:
 UPSTREAM_PR_URL = "https://github.com/WUR-AI/diffWOFOST"
 
-# Public URL for the models bundle (release asset of this tutorial repo).
-# Update the org / version when you cut the v1.0 release.
+# Where this tutorial repo is hosted. Used by both the Colab badge and the
+# release-asset URL below. Update this one line if the repo is renamed or
+# transferred (e.g. ronvree/diffwofost-tutorial -> WUR-AI/diffwofost-tutorial)
+# and re-run this script to regenerate the notebook.
+TUTORIAL_REPO    = "ronvree/diffwofost-tutorial"
+TUTORIAL_BRANCH  = "master"    # flip to "main" after `git branch -M main`
+TUTORIAL_VERSION = "v1.0"
+
 MODELS_BUNDLE_URL = (
-    "https://github.com/WUR-AI/diffwofost-tutorial/releases/download/"
-    "v1.0/models_bundle.zip"
+    f"https://github.com/{TUTORIAL_REPO}/releases/download/"
+    f"{TUTORIAL_VERSION}/models_bundle.zip"
+)
+COLAB_BADGE_URL = (
+    f"https://colab.research.google.com/github/{TUTORIAL_REPO}/"
+    f"blob/{TUTORIAL_BRANCH}/hybrid_stress_correction.ipynb"
 )
 
 # Harvard Dataverse: Ten Den et al. (2024) — CC BY-NC-SA 4.0
@@ -93,7 +103,7 @@ def build():
         '    <img src="https://raw.githubusercontent.com/WUR-AI/diffWOFOST/refs/heads/main/docs/logo/diffwofost.png" width="150" style="margin-left: 20px;">\n'
         '</div>\n'
         '\n'
-        '[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/WUR-AI/diffwofost-tutorial/blob/main/hybrid_stress_correction.ipynb)\n'
+        f'[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)]({COLAB_BADGE_URL})\n'
         '\n'
         'A self-contained Colab tutorial: build a **hybrid crop model** by\n'
         'plugging a small neural network into the WOFOST72 simulator and training\n'

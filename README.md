@@ -1,6 +1,6 @@
 # diffwofost-tutorial
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/WUR-AI/diffwofost-tutorial/blob/main/hybrid_stress_correction.ipynb)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ronvree/diffwofost-tutorial/blob/master/hybrid_stress_correction.ipynb)
 
 A self-contained Google Colab tutorial showing how to build a **hybrid crop
 model** by plugging a small neural network into the
