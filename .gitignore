@@ -1,0 +1,18 @@
+# Build artifacts (uploaded as release assets, not committed)
+models_bundle.zip
+
+# Intermediate dump used by scripts/build_notebook.py (regenerated on demand)
+_cells_src.json
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+Thumbs.db
