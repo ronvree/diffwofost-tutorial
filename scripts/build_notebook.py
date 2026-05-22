@@ -149,8 +149,14 @@ def build():
     ))
 
     # ---- Cell 3: pip install ----------------------------------------------
+    # Pin to a specific main commit (not the v0.4.0 PyPI release).
+    # v0.4.0 predates the introduction of CROP_COMPONENTS on Configuration
+    # (commit 0a4d4a3, PR #108) which the NN-integration code below depends on.
+    # When a newer release is cut on PyPI containing both CROP_COMPONENTS and
+    # the embedded NN classes, switch back to a simple PyPI pin and delete
+    # the §2.1 embed cells.
     cells.append(code(
-        '!pip install -q diffwofost==0.4.0\n'
+        '!pip install -q "diffwofost @ git+https://github.com/WUR-AI/diffWOFOST@0a4d4a3b6682"\n'
     ))
 
     # ---- Cell 4: imports (modified — no NN classes, no asserts) -----------
@@ -177,7 +183,8 @@ def build():
         'from pcse.util import DummySoilDataProvider\n'
         'from pcse.traitlets import Instance\n'
         '\n'
-        '# diffwofost==0.4.0 — physics engine, configuration, classic_waterbalance.\n'
+        '# diffwofost @ main (commit 0a4d4a3) — physics engine, Configuration\n'
+        '#   with CROP_COMPONENTS support (post-v0.4.0), classic_waterbalance.\n'
         '# StressNN and NNStressFactor are NOT on PyPI yet; we embed them below.\n'
         'from diffwofost.physical_models.config import ComputeConfig, Configuration\n'
         'from diffwofost.physical_models.crop.wofost72 import Wofost72\n'
@@ -202,15 +209,19 @@ def build():
         '### 2.1 Embedded NN classes (temporary)\n'
         '\n'
         f'The two cells below define `StressNN` and `NNStressFactor`. They are\n'
-        f'embedded here directly because **`diffwofost==0.4.0` does not yet\n'
-        f'ship the NN integration**. The reference source lives on the\n'
-        f'development branch of the diffwofost repo:\n'
+        f'embedded here directly because **the diffwofost release on PyPI\n'
+        f'(`v0.4.0`) does not yet ship the NN integration**. We install from\n'
+        f'`main` above (pinned to a specific commit so the tutorial stays\n'
+        f'reproducible), which gives us the recent `CROP_COMPONENTS` change to\n'
+        f'`Configuration` needed to plug in the NN. The two embedded classes\n'
+        f'themselves live on a development branch — reference source:\n'
         f'\n'
         f'- [`src/diffwofost/ml_models/stress.py`]({UPSTREAM_PR_URL}/blob/add-partitioning-sigmoid/src/diffwofost/ml_models/stress.py)\n'
         f'- [`src/diffwofost/ml_models/crop/evapotranspiration.py`]({UPSTREAM_PR_URL}/blob/add-partitioning-sigmoid/src/diffwofost/ml_models/crop/evapotranspiration.py)\n'
         f'\n'
-        f"Once they're merged to main and a new release cuts, this section can be\n"
-        '**deleted** and replaced with two simple imports.\n'
+        f"Once they're merged to main and a new PyPI release cuts, this whole\n"
+        f'section can be replaced with two imports and the install line above\n'
+        f'switched back to a simple `diffwofost==0.5.0`.\n'
     ))
 
     # ---- Cell 6: embedded StressNN ----------------------------------------
