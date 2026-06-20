@@ -209,11 +209,12 @@ def build():
         '## 2. Run me first (Colab setup)\n'
         '\n'
         'Run the collapsed setup cells below (click **Show code** on Colab to expand\n'
-        'any of them). They install diffwofost, import everything, define two\n'
-        'auxiliary classes, download data + pre-trained weights, and convert the\n'
-        'weather files. After they finish you can `Run All` and watch the rest of\n'
-        'the notebook execute end-to-end (about 8–10 min on a free Colab CPU\n'
-        'runtime).\n'
+        'any of them). They install diffwofost, download data + pre-trained weights,\n'
+        'and convert the weather files. The hybrid NN classes are defined later in\n'
+        '**§5.1**, once we have introduced the architecture.\n'
+        '\n'
+        'After they finish you can `Run All` and watch the rest of the notebook\n'
+        'execute end-to-end (about 8–10 min on a free Colab CPU runtime).\n'
         '\n'
         '> 💡 On Colab go to **Runtime → Run all** once the install cell has\n'
         '> finished.\n'
@@ -253,7 +254,7 @@ def build():
         '\n'
         '# diffwofost @ main (commit 0a4d4a3) — physics engine, Configuration\n'
         '#   with CROP_COMPONENTS support (post-v0.4.0), classic_waterbalance.\n'
-        '# StressNN and NNStressFactor are NOT on PyPI yet; we embed them below.\n'
+        '# StressNN and NNStressFactor are NOT on PyPI yet; defined in §5.1.\n'
         'from diffwofost.physical_models.config import ComputeConfig, Configuration\n'
         'from diffwofost.physical_models.crop.wofost72 import Wofost72\n'
         'from diffwofost.physical_models.engine import Engine\n'
@@ -274,35 +275,9 @@ def build():
         markdown="Libraries, `float64` on CPU, and `/content/data` paths.",
     ))
 
-    # ---- Cell 5: StressNN callout (markdown) ------------------------------
+    # ---- Cell 5: data-fetch markdown --------------------------------------
     cells.append(md(
-        '### 2.1 Embedded NN classes (temporary)\n'
-        '\n'
-        f'The two cells below define `StressNN` and `NNStressFactor`. They are\n'
-        f'embedded here directly because **the diffwofost release on PyPI\n'
-        f'(`v0.4.0`) does not yet ship the NN integration**. We install from\n'
-        f'`main` above (pinned to a specific commit so the tutorial stays\n'
-        f'reproducible), which gives us the recent `CROP_COMPONENTS` change to\n'
-        f'`Configuration` needed to plug in the NN. The two embedded classes\n'
-        f'themselves live on a development branch — reference source:\n'
-        f'\n'
-        f'- [`src/diffwofost/ml_models/stress.py`]({UPSTREAM_PR_URL}/blob/add-partitioning-sigmoid/src/diffwofost/ml_models/stress.py)\n'
-        f'- [`src/diffwofost/ml_models/crop/evapotranspiration.py`]({UPSTREAM_PR_URL}/blob/add-partitioning-sigmoid/src/diffwofost/ml_models/crop/evapotranspiration.py)\n'
-        f'\n'
-        f"Once they're merged to main and a new PyPI release cuts, this whole\n"
-        f'section can be replaced with two imports and the install line above\n'
-        f'switched back to a simple `diffwofost==0.5.0`.\n'
-    ))
-
-    # ---- Cell 6: embedded StressNN ----------------------------------------
-    cells.append(code(extract_class_source(STRESS_NN_PY, "StressNN")))
-
-    # ---- Cell 7: embedded NNStressFactor ----------------------------------
-    cells.append(code(extract_class_source(NN_STRESS_FACTOR_PY, "NNStressFactor")))
-
-    # ---- Cell 8: data-fetch markdown --------------------------------------
-    cells.append(md(
-        '### 2.2 Download data and pre-trained weights\n'
+        '### 2.1 Download data and pre-trained weights\n'
         '\n'
         'Two sources:\n'
         '\n'
@@ -412,10 +387,31 @@ def build():
         upstream[5]["src"],
     ))
 
-    # ---- Cells 11+: keep §3 onwards verbatim ------------------------------
+    # ---- Cells 10+: keep §3 onwards verbatim; inject §5.1 after §5 --------
+    section_5_1_md = (
+        '### 5.1 The two plug-in components\n'
+        '\n'
+        '`StressNN` is the tiny MLP that maps daily features → `RFTRA ∈ [0, 1]`.\n'
+        '`NNStressFactor` is the WOFOST evapotranspiration swap that calls it on every\n'
+        'simulated day.\n'
+        '\n'
+        'The code below is embedded here because **the diffwofost PyPI release (`v0.4.0`)\n'
+        'does not yet ship this NN integration** — we install from a pinned `main`\n'
+        'commit in §2 for `CROP_COMPONENTS` support. Reference source:\n'
+        '\n'
+        f'- [`src/diffwofost/ml_models/stress.py`]({UPSTREAM_PR_URL}/blob/add-partitioning-sigmoid/src/diffwofost/ml_models/stress.py)\n'
+        f'- [`src/diffwofost/ml_models/crop/evapotranspiration.py`]({UPSTREAM_PR_URL}/blob/add-partitioning-sigmoid/src/diffwofost/ml_models/crop/evapotranspiration.py)\n'
+        '\n'
+        'Skim the docstrings or read the full implementation if you are curious; §6\n'
+        'explains what features go in.\n'
+    )
     for cell in upstream[6:]:
         if cell["type"] == "markdown":
             cells.append(md(cell["src"]))
+            if cell["src"].startswith("## 5. The hybrid model"):
+                cells.append(md(section_5_1_md))
+                cells.append(code(extract_class_source(STRESS_NN_PY, "StressNN")))
+                cells.append(code(extract_class_source(NN_STRESS_FACTOR_PY, "NNStressFactor")))
         else:
             cells.append(code(cell["src"]))
 
