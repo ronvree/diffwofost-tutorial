@@ -63,6 +63,49 @@ FIELD_DATA_FILES = [
     "Weatherfile_vredepeel.xlsx",
 ]
 
+# Collapsed on Colab via { display-mode: "form" } — matched by a unique substring.
+FORM_CELL_RULES = [
+    ('OBS_TO_PCSE = {"LeavesDW"', "Loss function helpers",
+     "Pooled normalised RMSE over biomass/LAI observations."),
+    ('PURE_OUTPUT_SCALES = torch.tensor', "LSTM data preparation",
+     "Pre-build per-plot feature sequences and observation targets for the pure-ML baseline."),
+    ('SITE_INDEX = {"L": 0, "V": 1}', "Feature encodings: plot context",
+     "§6 — site, N level, irrigation, and cultivar one-hot encodings."),
+    ('def saturation_vp(temp_c):', "Feature encodings: weather",
+     "§6 — VPD, rolling rainfall, and other per-day weather features."),
+    ('class PlotFeatureBuilder:', "Daily feature assembler",
+     "§6 — combines weather, DVS, and plot context for the stress NN."),
+    ('crop_data_provider = YAMLCropDataProvider(fpath=crop_path', "Engine setup",
+     "§7 — WOFOST72_PP stack with `NNStressFactor` plugged into evapotranspiration."),
+    ('CULTIVAR_COLORS = {c: plt.cm.tab10', "Plot: biomass and LAI by cultivar",
+     "§4.1 — scatter trajectories per cultivar."),
+    ('loc_colors = {"L": "tab:blue"', "Plot: site comparison",
+     "§4.2 — Lelystad vs Vredepeel."),
+    ('axes[0].set_title("tubersDW vs Date, by Nitrogen level")', "Plot: treatment-effect preview",
+     "§4.3 — nitrogen and irrigation."),
+    ('ax.plot(training_run["train_history"]', "Plot: training loss curves",
+     "§11.1 — train vs test loss over steps."),
+    ('def _select_representative_plots(plots', "Plot: per-plot model fits",
+     "§11.2 — hybrid, WOFOST reference, and observations."),
+    ('fitted["RFTRA"].detach().cpu().numpy()', "Plot: learned RFTRA trajectories",
+     "§11.3 — daily stress factor over the season."),
+    ('def aggregate_rftra_by_dvs(plots', "Plot: RFTRA profile by cultivar",
+     "§11.4 — mean RFTRA binned by DVS."),
+    ('N_LEVELS = ["N0", "N1", "N2"]', "Plot: RFTRA profile by N treatment",
+     "§11.5 — mean RFTRA binned by DVS and N level."),
+    ('def per_plot_diag(plots, results_dict):', "Plot: hybrid vs WOFOST RMSE",
+     "§12 — per-variable normalised RMSE bars."),
+    ('sample_plot_for_lstm = test_plots[0]', "Plot: three-model trajectories",
+     "§13 — one example plot, all three models."),
+    ('ax.set_title("Per-variable test RMSE: three models', "Plot: three-model test RMSE",
+     "§13 — per-variable bars on the test set."),
+    ('ax.set_title("Train vs. test loss — physics keeps the hybrid honest")',
+     "Plot: hybrid vs LSTM generalisation",
+     "§13 — pooled train/test loss comparison."),
+    ('TYPICAL_PERTURB = {"SPAN": 5.0', "Plot: yield parameter sensitivities",
+     "§14 — % change in final TWSO per perturbation."),
+]
+
 
 def md(src):
     return {"cell_type": "markdown", "metadata": {}, "source": src.splitlines(keepends=True)}
@@ -74,6 +117,33 @@ def code(src):
         "metadata": {}, "outputs": [],
         "source": src.splitlines(keepends=True),
     }
+
+
+def form_code(title, src, markdown=None):
+    """Colab form cell: collapsed by default with a 'Show code' toggle."""
+    header = f'#@title {title} {{ display-mode: "form" }}\n'
+    if markdown:
+        header += f"#@markdown {markdown}\n\n"
+    return code(header + src)
+
+
+def wrap_form_cells(cells):
+    """Wrap matching code cells in Colab form headers (plot + boilerplate cells)."""
+    for cell in cells:
+        if cell["cell_type"] != "code":
+            continue
+        src = "".join(cell["source"])
+        if src.startswith("#@title"):
+            continue
+        for needle, title, markdown in FORM_CELL_RULES:
+            if needle in src:
+                cell["source"] = [
+                    f'#@title {title} {{ display-mode: "form" }}\n',
+                    f"#@markdown {markdown}\n",
+                    "\n",
+                ] + cell["source"]
+                break
+    return cells
 
 
 def extract_class_source(path: Path, class_name: str) -> str:
@@ -138,29 +208,27 @@ def build():
     cells.append(md(
         '## 2. Run me first (Colab setup)\n'
         '\n'
-        'The next four cells install diffwofost, import everything, define two\n'
-        'classes that are not yet on PyPI (see callout below), and download the\n'
-        'data + pre-trained weights. After they finish you can `Run All` and\n'
-        'watch the rest of the notebook execute end-to-end (about 8–10 min on a\n'
-        'free Colab CPU runtime).\n'
+        'Run the collapsed setup cells below (click **Show code** on Colab to expand\n'
+        'any of them). They install diffwofost, import everything, define two\n'
+        'auxiliary classes, download data + pre-trained weights, and convert the\n'
+        'weather files. After they finish you can `Run All` and watch the rest of\n'
+        'the notebook execute end-to-end (about 8–10 min on a free Colab CPU\n'
+        'runtime).\n'
         '\n'
         '> 💡 On Colab go to **Runtime → Run all** once the install cell has\n'
         '> finished.\n'
     ))
 
     # ---- Cell 3: pip install ----------------------------------------------
-    # Pin to a specific main commit (not the v0.4.0 PyPI release).
-    # v0.4.0 predates the introduction of CROP_COMPONENTS on Configuration
-    # (commit 0a4d4a3, PR #108) which the NN-integration code below depends on.
-    # When a newer release is cut on PyPI containing both CROP_COMPONENTS and
-    # the embedded NN classes, switch back to a simple PyPI pin and delete
-    # the §2.1 embed cells.
-    cells.append(code(
-        '!pip install -q "diffwofost @ git+https://github.com/WUR-AI/diffWOFOST@0a4d4a3b6682"\n'
+    cells.append(form_code(
+        "Install diffwofost",
+        '!pip install -q "diffwofost @ git+https://github.com/WUR-AI/diffWOFOST@0a4d4a3b6682"\n',
     ))
 
     # ---- Cell 4: imports (modified — no NN classes, no asserts) -----------
-    cells.append(code(
+    cells.append(form_code(
+        "Imports and global settings",
+        (
         'import copy\n'
         'import warnings\n'
         'import zipfile\n'
@@ -202,6 +270,8 @@ def build():
         'data_temp_dir = Path("/content/data_temp")\n'
         'print(f"data_dir      = {data_dir}")\n'
         'print(f"data_temp_dir = {data_temp_dir}")\n'
+        ),
+        markdown="Libraries, `float64` on CPU, and `/content/data` paths.",
     ))
 
     # ---- Cell 5: StressNN callout (markdown) ------------------------------
@@ -256,7 +326,7 @@ def build():
     files_block = "\n".join(
         f'    "{name}",' for name in FIELD_DATA_FILES
     )
-    cells.append(code(
+    data_fetch_src = (
         'for d in [\n'
         '    data_temp_dir,\n'
         '    data_temp_dir / "trained_models",\n'
@@ -326,12 +396,21 @@ def build():
         'crop_path = data_dir / "crop"\n'
         '\n'
         'print("\\nAll data ready.")\n'
+    )
+    cells.append(form_code(
+        "Download data and pre-trained weights",
+        data_fetch_src,
+        markdown=(
+            "Field-trial CSVs, weather files, model weights, and PCSE configs "
+            "(~1 MB total). Re-running is a no-op once cached."
+        ),
     ))
 
     # ---- Cell 10: weather conversion (lightly adapted from upstream) ------
-    # Reuse the upstream conversion function verbatim. weather_paths is set
-    # exactly as before; data_temp_dir was set in the imports cell.
-    cells.append(code(upstream[5]["src"]))
+    cells.append(form_code(
+        "Convert weather to PCSE format",
+        upstream[5]["src"],
+    ))
 
     # ---- Cells 11+: keep §3 onwards verbatim ------------------------------
     for cell in upstream[6:]:
@@ -339,6 +418,8 @@ def build():
             cells.append(md(cell["src"]))
         else:
             cells.append(code(cell["src"]))
+
+    wrap_form_cells(cells)
 
     notebook = {
         "cells": cells,
