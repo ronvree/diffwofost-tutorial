@@ -35,11 +35,19 @@ through the whole pipeline in 8–10 min on a free CPU runtime.
 ├── README.md                        ← this file
 ├── LICENSE                          ← EUPL-1.1 (code + notebook)
 ├── DATA_LICENSE.md                  ← CC BY-NC-SA 4.0 (field data + models)
-├── data/                            ← all runtime assets the notebook downloads
+├── data/                            ← runtime assets the notebook downloads
 │   ├── Plotspecific_processed.csv   ← mirrored from Harvard Dataverse
 │   ├── Weatherfile_lelystad.xlsx    ← mirrored from Harvard Dataverse
 │   ├── Weatherfile_vredepeel.xlsx   ← mirrored from Harvard Dataverse
 │   └── models_bundle.zip            ← pre-trained model weights (built by scripts/)
+├── tutorial_utils/                  ← helper modules the notebook imports
+│   ├── data.py                      ← field-data loading, weather conversion, splits
+│   ├── features.py                  ← plot-context + per-day weather features
+│   ├── losses.py                    ← observation-date alignment, per-plot RMSE
+│   ├── training.py                  ← early-stopping + checkpoint plumbing
+│   ├── evaluation.py                ← per-plot diagnostics, DVS-binned RFTRA aggregation
+│   ├── viz.py                       ← all matplotlib plotting
+│   └── lstm.py                      ← pure-ML LSTM baseline (model + training)
 └── scripts/
     ├── build_notebook.py            ← regenerates the .ipynb from a local diffwofost checkout
     └── build_models_bundle.py       ← packages the pre-trained weights into data/models_bundle.zip
@@ -54,6 +62,7 @@ is nothing to install or copy locally:
 |--------|-------|------|---------|
 | This repo's [`data/`](data/) directory | `Plotspecific_processed.csv`, `Weatherfile_lelystad.xlsx`, `Weatherfile_vredepeel.xlsx` (mirrored from [Ten Den et al. (2024), Harvard Dataverse](https://doi.org/10.7910/DVN/1LC6W7) — see [DATA_LICENSE.md](DATA_LICENSE.md)) | ~900 KB | CC BY-NC-SA 4.0 |
 | This repo's [`data/`](data/) directory | `models_bundle.zip` (pre-trained `stress_nn_random.pt` + `pure_lstm_random.pt`) | ~80 KB | CC BY-NC-SA 4.0 (derivative work) |
+| This repo's [`tutorial_utils/`](tutorial_utils/) directory | `data.py`, `features.py`, `losses.py`, `training.py`, `evaluation.py`, `viz.py`, `lstm.py` | ~30 KB | EUPL-1.1 |
 | [`ajwdewit/pcse`](https://github.com/ajwdewit/pcse) + [`ajwdewit/pcse_notebooks`](https://github.com/ajwdewit/pcse_notebooks) | `Wofost72_PP.conf`, `crops.yaml`, `potato.yaml`, `AGMT_C2_2020.agro` | ~50 KB | Apache-2.0 |
 
 PyPI install: `diffwofost==0.4.0` (pulls `pcse`, `torch`, etc. transitively).
