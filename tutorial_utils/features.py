@@ -60,3 +60,29 @@ def precompute_weather_features(weather_path):
 
 def build_weather_features(weather_paths):
     return {site: precompute_weather_features(p) for site, p in weather_paths.items()}
+
+
+class PlotFeatureBuilder:
+    """Daily feature assembler for a specific plot.
+
+    Pre-computed weather features and the plot context tensor are baked in at
+    construction; only DVS is read fresh from the kiosk on each call.
+    """
+
+    def __init__(self, weather_features_by_date, plot_context):
+        self.weather_features = weather_features_by_date
+        self.plot_context = plot_context
+
+    def __call__(self, day, drv, kiosk):
+        wf = self.weather_features.get(pd.Timestamp(day).normalize())
+        if wf is None:
+            wf = torch.zeros(
+                WEATHER_FEATURE_DIM,
+                dtype=ComputeConfig.get_dtype(),
+                device=ComputeConfig.get_device(),
+            )
+        dvs = kiosk["DVS"] if "DVS" in kiosk else torch.tensor(0.0)
+        if not isinstance(dvs, torch.Tensor):
+            dvs = torch.tensor(dvs, dtype=ComputeConfig.get_dtype())
+        crop_state = dvs.flatten()[:1]
+        return torch.cat([wf, crop_state, self.plot_context])
